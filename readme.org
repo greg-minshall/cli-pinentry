@@ -1,0 +1,32 @@
+* cli-pinentry
+
+** goal
+
+the simple goal here is to be able to invoke [[https://www.gnupg.org/related_software/pinentry/index.en.html][pinentry(1)]] from the
+command line, passing some of the most likely options as command line
+flags.  the retrieved secret can be returned as output (to stdout) or
+copied to the system clipboard.
+
+** SECURITY PROBLEMS!!!!
+
+pinentry(1) works hard to keep the secret (pin) secure, *trying*,
+e.g., to not allow pin to end up on the disk (by keeping it in
+unpagable memory).  cli-pinentry, sadly, doesn't do all this, and MAY
+ALLOW A PIN that would otherwise be kept safe to be LEAKED.
+
+your mileage may vary, and the author of this program makes NO
+WARRANTIES about the safety and/or security of the program.  do NOT
+use this program for "vital" secrets.
+
+** prerequisites:
+
+in addition to some "standard" python packages (os, sys, termios),
+cli-pinentry requires the following python packages:
+- [[https://pexpect.readthedocs.io/en/stable/][pexpect]]
+- [[https://docs.python.org/3.5/howto/argparse.html][argparse]]
+- [[http://coffeeghost.net/2010/10/09/pyperclip-a-cross-platform-clipboard-module-for-python/][pyperclip]]
+these can be installed by, e.g., pip(1) or "apt-get install",
+depending on your setup.
+
+the pyperclip package itself requires either [[http://xclip.sourceforge.net][xclip(1)]] (preferred) or
+[[http://www.vergenet.net/~conrad/software/xsel/][xsel(1)]].

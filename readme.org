@@ -2,10 +2,10 @@
 
 ** goal
 
-the simple goal here is to be able to invoke [[https://www.gnupg.org/related_software/pinentry/index.en.html][pinentry(1)]] from the
-command line, passing some of the most likely options as command line
-flags.  the retrieved secret can be returned as output (to stdout) or
-copied to the system clipboard.
+the simple goal here is to be able to invoke [[https://www.gnupg.org/related_software/pinentry/index.en.html][pinentry(1)]] (a part of
+[[https://www.gnupg.org/index.html][GNU Privacy Guard]]) from the command line, passing some of the most
+likely options as command line flags.  the retrieved secret can be
+returned as output (to stdout) or copied to the system clipboard.
 
 ** SECURITY PROBLEMS!!!!
 

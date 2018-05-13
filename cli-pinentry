@@ -1,0 +1,99 @@
+#!/usr/bin/env python
+
+# this runs pinentry
+
+# cli-pinentry [{-c|--copy}]
+#              [--desc descriptivetext]
+#              [--prompt prompt]
+#              [--ok "Ok"]
+#              [--cancel "Cancel] 
+
+#### https://stackoverflow.com/a/14981125/1527747
+from __future__ import print_function
+####
+
+import pexpect, os, argparse, termios, sys
+
+#### more from https://stackoverflow.com/a/14981125/1527747
+def eprint(*args):
+    print(*args, file=sys.stderr)
+####
+
+# parse arguments https://docs.python.org/3.5/howto/argparse.html
+parser = argparse.ArgumentParser(description="""
+run pinentry(1) from command line.  
+this is NOT SO SECURE!!!!  pinentry makes every effort to keep the decrypted
+password from being exposed to any more of the system (paging subsystem,
+etc.) as possible.  but, WE PUNT ON ALL THAT.  
+
+DON'T USE THIS for "vital" secrets.
+""")
+parser.add_argument("-c", "--copy", action="store_true", help="copy to clipboard")
+parser.add_argument("--desc", help="set the descriptive text to display (SETDESC)")
+parser.add_argument("--prompt", help="set the prompt to show (SETPROMPT)")
+parser.add_argument("--ok", help="set the OK button text (SETOK)")
+parser.add_argument("--cancel", help="set the Cancel button text (SETCANCEL)")
+parser.add_argument("--pinentry", default="pinentry-curses",
+                    help="pinentry program (e.g., pinentry-curses) to run")
+
+args = parser.parse_args()
+
+def do_expect():
+    # http://pexpect.readthedocs.io/en/stable/api/pexpect.html
+    try:
+        child = pexpect.spawn(
+            "{0} --ttyname {1}".format(
+            args.pinentry,
+            os.ttyname(sys.stdin.fileno()))
+        )
+    except:
+        eprint("unable to spawn \"{0}\"".format(args.pinentry))
+        exit(1)
+
+    child.expect("OK.*\n")
+
+    if args.desc:
+        child.sendline("setdesc {0}".format(args.desc))
+        if args.prompt:
+            child.sendline("setprompt {0}".format(args.prompt))
+        if args.ok:
+            child.sendline("setok {0}".format(args.ok))
+        if args.cancel:
+            child.sendline("setcancel {0}".format(args.cancel))
+
+    child.sendline("getpin")
+    child.sendline("bye")
+    child.expect("\r\nD[ ]+([^\n\r]*)\r\n")
+    return child.match.group(1)
+
+
+def return_res(res):
+    if args.copy:
+        # http://coffeeghost.net/2010/10/09/pyperclip-a-cross-platform-clipboard-module-for-python/
+        try:
+            import pyperclip
+        except:
+            eprint("error importing pyperclip (is it installed?)")
+            exit(1)
+        else:
+            try:
+                pyperclip.copy(res)
+            except:
+                eprint("error copying to clipboard (via pyperclip)")
+                exit(1)
+    else:
+        print(res)
+
+# copied from https://docs.python.org/3/library/termios.html
+fd = sys.stdin.fileno()
+old = termios.tcgetattr(fd)
+try:
+    res = do_expect()
+except Exception as e:
+    eprint("error from pexpect: {0}".format(e))
+    exit(2)
+finally:
+    termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
+# return the result as the user wishes
+return_res(res)

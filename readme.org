@@ -28,5 +28,5 @@ cli-pinentry requires the following python packages:
 these can be installed by, e.g., pip(1) or "apt-get install",
 depending on your setup.
 
-the pyperclip package itself requires either [[http://xclip.sourceforge.net][xclip(1)]] (preferred) or
+the pyperclip package itself requires either [[https://github.com/astrand/xclip][xclip(1)]] (preferred) or
 [[http://www.vergenet.net/~conrad/software/xsel/][xsel(1)]].

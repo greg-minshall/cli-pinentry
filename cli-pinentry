@@ -59,14 +59,15 @@ def return_res(res):
         print(res)
 
 # parse arguments https://docs.python.org/3.5/howto/argparse.html
-parser = argparse.ArgumentParser(description="""
-run pinentry(1) from command line.  
-this is NOT SO SECURE!!!!  pinentry makes every effort to keep the decrypted
-password from being exposed to any more of the system (paging subsystem,
-etc.) as possible.  but, WE PUNT ON ALL THAT.  
+parser = argparse.ArgumentParser(description=
+"""run pinentry(1) from command line; send secret to stdout (but, *not*
+to a terminal), or copy to system clipboard.
 
-DON'T USE THIS for "vital" secrets.
-""")
+this is NOT SO SECURE!!!!  pinentry makes every effort to keep the
+decrypted password from being exposed to any more of the system
+(paging subsystem, etc.) as possible.  but, WE PUNT ON ALL THAT.
+
+DON'T USE THIS for "vital" secrets.""")
 parser.add_argument("-c", "--copy", action="store_true", help="copy to clipboard")
 parser.add_argument("--desc", help="set the descriptive text to display (SETDESC)")
 parser.add_argument("--prompt", help="set the prompt to show (SETPROMPT)")
@@ -80,6 +81,11 @@ args = parser.parse_args()
 # copied from https://docs.python.org/3/library/termios.html
 fdin = sys.stdin.fileno()
 fdout = sys.stdout.fileno()
+if os.isatty(fdout) and not args.copy:
+    # for some security, we don't allow printing to the terminal
+    eprint("output to terminal not allowed (you can always pipe through cat(1))")
+    exit(3)
+
 old = termios.tcgetattr(fdin)
 try:
     res = do_expect()

@@ -7,6 +7,9 @@ the simple goal here is to be able to invoke [[https://www.gnupg.org/related_sof
 likely options as command line flags.  the retrieved secret can be
 returned as output (to stdout) or copied to the system clipboard.
 
+i did this, really, because i don't particularly like the UI of
+[[http://www.jmknoble.net/software/x11-ssh-askpass/][ssh-askpass(1)]] (sorry if the link is broken).
+
 ** SECURITY PROBLEMS!!!!
 
 pinentry(1) works hard to keep the secret (pin) secure, *trying*,
@@ -14,11 +17,13 @@ e.g., to not allow pin to end up on the disk (by keeping it in
 unpagable memory).  cli-pinentry, sadly, doesn't do all this, and MAY
 ALLOW A PIN that would otherwise be kept safe to be LEAKED.
 
+*possibly*, cli-pinentry is as secure as ssh-askpass.
+
 your mileage may vary, and the author of this program makes NO
 WARRANTIES about the safety and/or security of the program.  do NOT
 use this program for "vital" secrets.
 
-** prerequisites:
+** prerequisites
 
 in addition to some "standard" python packages (os, sys, termios),
 cli-pinentry requires the following python packages:
@@ -30,3 +35,26 @@ depending on your setup.
 
 the pyperclip package itself requires either [[https://github.com/astrand/xclip][xclip(1)]] (preferred) or
 [[http://www.vergenet.net/~conrad/software/xsel/][xsel(1)]].
+
+** synopsis
+
+| cli-pinentry | [-h,--help]              | # /print help message/                             |
+|              | [{-c,--copy}]            | # /don't print result, rather copy to clipboard/   |
+|              | [--desc descriptivetext] | # /pinentry's "SETDESC" command/                   |
+|              | [--prompt prompt]        | # /pinentry's "SETPROMPT" command/                 |
+|              | [--ok  text]             | # /pinentry's "SETOK" command/                     |
+|              | [--cancel text]          | # /pinentry's "SETCANCEL" command                  |
+|              | [--pinentry "pinentry"]  | # /which program to use (e.g., "pinentry-curses")/ |
+
+** examples
+
+to get help:
+: cli-pinentry -h
+
+to run, using pinentry-curses:
+: cli-pinentry --pinentry pinentry-curses
+
+cli-pinentry tries to disallow the output being printed on the
+terminal.  but, if you really need to see what you typed in, you can
+always pipe the output of cli-pinentry through cat(1):
+: cli-pinentry | cat

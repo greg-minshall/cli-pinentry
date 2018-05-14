@@ -1,4 +1,4 @@
-* cli-pinentry
+* [[https://github.com/greg-minshall/cli-pinentry][cli-pinentry]]
 
 ** goal
 

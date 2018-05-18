@@ -20,9 +20,12 @@ def do_expect():
             args.pinentry,
             os.ttyname(sys.stdin.fileno()))
         )
-    except:
-        eprint("unable to spawn \"{0}\"".format(args.pinentry))
-        exit(1)
+    except:                     # so, maybe no tty...
+        try:
+            child = pexpect.spawn(args.pinentry)
+        except Exception as e:
+            eprint("unable to spawn \"{0}\" -- error: {1}".format(args.pinentry, e))
+            exit(1)
 
     child.expect("OK.*\n")
 
@@ -73,7 +76,7 @@ parser.add_argument("--desc", help="set the descriptive text to display (SETDESC
 parser.add_argument("--prompt", help="set the prompt to show (SETPROMPT)")
 parser.add_argument("--ok", help="set the OK button text (SETOK)")
 parser.add_argument("--cancel", help="set the Cancel button text (SETCANCEL)")
-parser.add_argument("--pinentry", default="pinentry-curses",
+parser.add_argument("--pinentry", default="pinentry",
                     help="pinentry program (e.g., pinentry-curses) to run")
 
 args = parser.parse_args()
@@ -86,14 +89,19 @@ if os.isatty(fdout) and not args.copy:
     eprint("output to terminal not allowed (you can always pipe through cat(1))")
     exit(3)
 
-old = termios.tcgetattr(fdin)
+try:
+    old = termios.tcgetattr(fdin)
+except:
+    old = False                 # i guess not a terminal...
+
 try:
     res = do_expect()
 except Exception as e:
     eprint("error from pexpect: {0}".format(e))
     exit(2)
 finally:
-    termios.tcsetattr(fdin, termios.TCSADRAIN, old)
+    if old:
+        termios.tcsetattr(fdin, termios.TCSADRAIN, old)
 
 # return the result as the user wishes
 return_res(res)
